@@ -70,17 +70,15 @@ namespace Utils
             // 바운딩 박스의 중심점 변환
             Vector3 transformedCenter = trMatrix.MultiplyPoint3x4(box.Center);
 
-            // 바운딩 박스 회전 적용
-            // 이 예제에서는 간단히 처리를 위해 Quaternion을 직접 사용합니다.
-            // 실제로는 Tr_velo_to_cam 행렬의 회전 부분을 Quaternion으로 변환해야 할 수 있습니다.
+            // 바운딩 박스 회전 적용 (Tr_velo_to_cam 행렬의 회전 부분을 Quaternion으로 변환.)
             var rotation = Quaternion.LookRotation(
-                trMatrix.GetColumn(2),  // Forward
-                trMatrix.GetColumn(1)   // Up
+                -trMatrix.GetColumn(1),  // Forward
+                -trMatrix.GetColumn(2)   // Up
             );
 
-            // 바운딩 박스의 크기는 변환 행렬에 영향을 받지 않습니다.
-            // 변환 행렬에 따라 크기가 변하는 경우가 있으나, 여기서는 처리하지 않습니다.
-            return new BoundingBox3D(box.RawClassificationData, transformedCenter, box.Size, rotation);
+            
+            
+            return new BoundingBox3D(box.RawClassificationData, box.Classification, transformedCenter, box.Size, rotation);
         }
         
         public static Quaternion RotationFromYaw(float yawDegrees)

@@ -11,8 +11,8 @@ public class KITTIRawDataProcessor : RawDataProcessor
     private CalibrationData _calibrationData;
 
     // 데이터 파일 경로
-    private string _calibFilesPath = "Assets/RawData(Model Output Data Example)/calib";
-    private string _labelFilesPath = "Assets/RawData(Model Output Data Example)/label_2";
+    private string _calibFilesPath = "Assets/_Project/RawData(Model Output Data Example)/calib";
+    private string _labelFilesPath = "Assets/_Project/RawData(Model Output Data Example)/label_2";
 
     private Queue<(string calibFilePath, string labelFilePath)> _dataFilesQueue = new Queue<(string, string)>();
 
@@ -95,6 +95,20 @@ public class KITTIRawDataProcessor : RawDataProcessor
                     float.Parse(parts[10], CultureInfo.InvariantCulture)),
                 Rotation = KITTIDataUtil.RotationFromYaw(float.Parse(parts[14], CultureInfo.InvariantCulture))
             };
+
+            boundingBox.Classification = classification switch
+            {
+                "Car" => BoundingBox3DType.Car,
+                "Pedestrian" => BoundingBox3DType.Pedestrian,
+                "Van" => BoundingBox3DType.Van,
+                "Truck" => BoundingBox3DType.Truck,
+                "Cyclist" => BoundingBox3DType.Cyclist,
+                "Tram" => BoundingBox3DType.Tram,
+                "Misc" => BoundingBox3DType.Misc,
+                "DontCare" => BoundingBox3DType.DontCare,
+                _ => boundingBox.Classification
+            };
+
             boundingBoxes.Add(boundingBox);
         }
 

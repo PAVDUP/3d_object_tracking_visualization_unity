@@ -490,6 +490,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1a7ce386ca3fd240b664ba03d8b392e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  classificationPrefabsSetting: {fileID: 0}
   boundingBoxMaterial: {fileID: 2100000, guid: 3d031d6e275b38d4b983e6d90ac9910a, type: 2}
   cameraTransform: {fileID: 542654382}
 --- !u!114 &1379205699
