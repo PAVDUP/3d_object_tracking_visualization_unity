@@ -45,8 +45,19 @@ class UnityVisualizeManager {
   +boundingBox3DVisualizer: BoundingBox3DVisualizer
 }
 
+class ClassificationPrefabs {
+  +classificationPrefabs: ClassificationPrefab[]
+}
+
+class ClassificationPrefab {
+  +classificationType: BoundingBox3DType
+  +classificationPrefabCandidates: GameObject[]
+}
+
 RawDataProcessor <|-- KITTIRawDataProcessor
 UnityVisualizeManager --> RawDataProcessor: uses
 UnityVisualizeManager --> VisualizeModule.BoundingBox3DVisualizer: uses
+UnityVisualizeManager *-- ClassificationPrefabs: composite
+ClassificationPrefabs *-- ClassificationPrefab: composite
 
 @enduml
