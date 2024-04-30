@@ -4,12 +4,14 @@ namespace DataType
 {
     public struct BoundingBox3D
     {
+        public string Classification;
         public Vector3 Center; 
         public Vector3 Size; 
         public Quaternion Rotation; // y axis (up) rotation. 
         
-        public BoundingBox3D(Vector3 center, Vector3 size, Quaternion rotation)
+        public BoundingBox3D(string classification, Vector3 center, Vector3 size, Quaternion rotation)
         {
+            Classification = classification;
             Center = center;
             Size = size;
             Rotation = rotation;

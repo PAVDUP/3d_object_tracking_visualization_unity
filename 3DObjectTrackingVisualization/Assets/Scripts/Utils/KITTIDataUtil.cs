@@ -14,42 +14,53 @@ namespace Utils
             foreach (var line in calibLines)
             {
                 var parts = line.Split(':');
+                if (parts.Length < 2) continue; // ':'을 기준으로 분할한 결과가 2개 미만이면 건너뜁니다.
+
                 var key = parts[0].Trim();
-                var values = parts[1].Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(val => float.Parse(val, CultureInfo.InvariantCulture.NumberFormat))
-                    .ToArray();
+                var valueString = parts[1].Trim();
+                var values = valueString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                .Select(val => float.Parse(val, CultureInfo.InvariantCulture))
+                                .ToArray();
 
                 switch (key)
                 {
                     case "P2":
-                        calibrationData.CameraMatrix = BuildMatrix4X4(values, 3, 4); // P2는 3x4 크기입니다.
+                        calibrationData.CameraMatrix = BuildMatrix4x3(values);
                         break;
                     case "R0_rect":
-                        calibrationData.RectificationMatrix = BuildMatrix4X4(values, 3, 3, true); // R0_rect는 3x3 크기이며, 4x4 행렬로 확장해야 합니다.
+                        calibrationData.RectificationMatrix = BuildMatrix3x3(values);
                         break;
                     case "Tr_velo_to_cam":
-                        calibrationData.TrVeloToCam = BuildMatrix4X4(values, 3, 4); // Tr_velo_to_cam은 3x4 크기입니다.
+                        calibrationData.TrVeloToCam = BuildMatrix4x3(values);
                         break;
                 }
             }
             return calibrationData;
         }
 
-        private static Matrix4x4 BuildMatrix4X4(float[] values, int rows, int cols, bool extendTo4X4 = false)
+        // 3x4 매트릭스를 생성하는 함수
+        private static Matrix4x4 BuildMatrix4x3(float[] values)
         {
+            if (values.Length < 12) return Matrix4x4.identity; // 값이 충분하지 않은 경우 단위 매트릭스를 반환
+
             var matrix = new Matrix4x4();
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    matrix[i, j] = values[i * cols + j];
-                }
-            }
-            if (extendTo4X4 && rows == 3 && cols == 3)
-            {
-                // R0_rect를 4x4 행렬로 확장
-                matrix[3, 3] = 1f;
-            }
+            matrix.SetRow(0, new Vector4(values[0], values[1], values[2], values[3]));
+            matrix.SetRow(1, new Vector4(values[4], values[5], values[6], values[7]));
+            matrix.SetRow(2, new Vector4(values[8], values[9], values[10], values[11]));
+            matrix.SetRow(3, new Vector4(0, 0, 0, 1)); // 4번째 줄을 (0, 0, 0, 1)로 설정하여 확장합니다.
+            return matrix;
+        }
+
+        // 3x3 매트릭스를 생성하고 4x4로 확장하는 함수
+        private static Matrix4x4 BuildMatrix3x3(float[] values)
+        {
+            if (values.Length < 9) return Matrix4x4.identity; // 값이 충분하지 않은 경우 단위 매트릭스를 반환
+
+            var matrix = new Matrix4x4();
+            matrix.SetRow(0, new Vector4(values[0], values[1], values[2], 0));
+            matrix.SetRow(1, new Vector4(values[3], values[4], values[5], 0));
+            matrix.SetRow(2, new Vector4(values[6], values[7], values[8], 0));
+            matrix.SetRow(3, new Vector4(0, 0, 0, 1)); // 4번째 줄을 (0, 0, 0, 1)로 설정하여 확장합니다.
             return matrix;
         }
 
@@ -69,7 +80,7 @@ namespace Utils
 
             // 바운딩 박스의 크기는 변환 행렬에 영향을 받지 않습니다.
             // 변환 행렬에 따라 크기가 변하는 경우가 있으나, 여기서는 처리하지 않습니다.
-            return new BoundingBox3D(transformedCenter, box.Size, rotation);
+            return new BoundingBox3D(box.Classification, transformedCenter, box.Size, rotation);
         }
         
         public static Quaternion RotationFromYaw(float yawDegrees)
