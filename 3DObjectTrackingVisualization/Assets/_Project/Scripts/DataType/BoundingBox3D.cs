@@ -35,10 +35,10 @@ namespace DataType
     {
         Car,
         Pedestrian,
-        Cyclist,
         Van,
         Truck,
-        // Tran, Misc, DontCare 는 사용하지 않음
+        // Cyclist, Tran, Misc, DontCare 는 사용하지 않음
+        Cyclist,
         Tram,
         Misc,
         DontCare
