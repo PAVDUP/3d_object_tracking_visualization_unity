@@ -1,22 +1,27 @@
+using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace DataType
 {
+    [Serializable]
     public struct BoundingBox3D
     {
-        public string RawClassificationData;
-        public BoundingBox3DType Classification;
-        public Vector3 Center; 
-        public Vector3 Size; 
-        public Quaternion Rotation; // y axis (up) rotation. 
+        public string rawClassificationData;
+        public BoundingBox3DType classification;
+        public int identifier;
+        public Vector3 center; // Camera Transform 기반 Center
+        public Vector3 size; 
+        public Quaternion rotation; // y axis (up) rotation. 
         
-        public BoundingBox3D(string rawClassificationData, BoundingBox3DType inputClassification, Vector3 center, Vector3 size, Quaternion rotation)
+        public BoundingBox3D(string rawClassificationData, BoundingBox3DType inputClassification, int identifier, Vector3 center, Vector3 size, Quaternion rotation)
         {
-            RawClassificationData = rawClassificationData;
-            Classification = inputClassification;
-            Center = center;
-            Size = size;
-            Rotation = rotation;
+            this.rawClassificationData = rawClassificationData;
+            classification = inputClassification;
+            this.identifier = identifier;
+            this.center = center;
+            this.size = size;
+            this.rotation = rotation;
         }
 
         /// <summary>
@@ -30,9 +35,11 @@ namespace DataType
         }
     }
     
+    
     /// <summary>
     /// KITTI dataset classification 을 기반으로 한 BoundingBox3DType
     /// </summary>
+    [Serializable]
     public enum BoundingBox3DType
     {
         Car,

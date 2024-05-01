@@ -65,9 +65,10 @@ public class KITTIRawDataProcessor : RawDataProcessor
             string boundingBoxData = "";
             foreach (var box in boundingBox3Ds)
             {
-                boundingBoxData += $"{{Classification: {box.RawClassificationData}, Center: {box.Center}, Size: {box.Size}, Rotation: {box.Rotation}}}\n";
+                boundingBoxData += JsonUtility.ToJson(box);
             }
-            Debug.Log(boundingBoxData);
+            // Debug.Log(boundingBoxData);
+            onRawDataProcessed.Invoke(boundingBoxData);
             
             onBoundingBoxProcessed.Invoke(boundingBox3Ds);
         }
@@ -84,19 +85,20 @@ public class KITTIRawDataProcessor : RawDataProcessor
             var classification = parts[0]; // 첫 번째 요소가 Classification 정보
             var boundingBox = new BoundingBox3D
             {
-                RawClassificationData = classification,
-                Center = new Vector3(
+                rawClassificationData = classification,
+                identifier = Random.Range(0, 10000), // !!!!!!!!!! 임의의 ID 부여 : KITTI 에서는 ID 값이 없어서 이렇게 했으나, 바꿀 필요 있다면 꼭 바꿔야 함!
+                center = new Vector3(
                     float.Parse(parts[11], CultureInfo.InvariantCulture),
                     float.Parse(parts[12], CultureInfo.InvariantCulture),
                     float.Parse(parts[13], CultureInfo.InvariantCulture)),
-                Size = new Vector3(
+                size = new Vector3(
                     float.Parse(parts[8], CultureInfo.InvariantCulture),
                     float.Parse(parts[9], CultureInfo.InvariantCulture),
                     float.Parse(parts[10], CultureInfo.InvariantCulture)),
-                Rotation = KITTIDataUtil.RotationFromYaw(float.Parse(parts[14], CultureInfo.InvariantCulture))
+                rotation = KITTIDataUtil.RotationFromYaw(float.Parse(parts[14], CultureInfo.InvariantCulture))
             };
 
-            boundingBox.Classification = classification switch
+            boundingBox.classification = classification switch
             {
                 "Car" => BoundingBox3DType.Car,
                 "Pedestrian" => BoundingBox3DType.Pedestrian,
@@ -106,7 +108,7 @@ public class KITTIRawDataProcessor : RawDataProcessor
                 "Tram" => BoundingBox3DType.Tram,
                 "Misc" => BoundingBox3DType.Misc,
                 "DontCare" => BoundingBox3DType.DontCare,
-                _ => boundingBox.Classification
+                _ => boundingBox.classification
             };
 
             boundingBoxes.Add(boundingBox);
@@ -123,8 +125,8 @@ public class KITTIRawDataProcessor : RawDataProcessor
         {
             var box = transformedBoxes[i];
             var transformedBox = KITTIDataUtil.TransformBoundingBox(box, trMatrix);
-            transformedBox.Center =
-                new Vector3(transformedBox.Center.z, -transformedBox.Center.x, -transformedBox.Center.y);
+            transformedBox.center =
+                new Vector3(transformedBox.center.z, -transformedBox.center.x, -transformedBox.center.y);
             transformedBoxes[i] = transformedBox;
         }
 

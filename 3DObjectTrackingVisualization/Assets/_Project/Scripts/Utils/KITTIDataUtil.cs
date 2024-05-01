@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using DataType;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Utils
 {
@@ -68,17 +69,15 @@ namespace Utils
         public static BoundingBox3D TransformBoundingBox(BoundingBox3D box, Matrix4x4 trMatrix)
         {
             // 바운딩 박스의 중심점 변환
-            Vector3 transformedCenter = trMatrix.MultiplyPoint3x4(box.Center);
+            Vector3 transformedCenter = trMatrix.MultiplyPoint3x4(box.center);
 
             // 바운딩 박스 회전 적용 (Tr_velo_to_cam 행렬의 회전 부분을 Quaternion으로 변환.)
             var rotation = Quaternion.LookRotation(
                 -trMatrix.GetColumn(1),  // Forward
                 -trMatrix.GetColumn(2)   // Up
             );
-
             
-            
-            return new BoundingBox3D(box.RawClassificationData, box.Classification, transformedCenter, box.Size, rotation);
+            return new BoundingBox3D(box.rawClassificationData, box.classification, box.identifier, transformedCenter, box.size, rotation);
         }
         
         public static Quaternion RotationFromYaw(float yawDegrees)

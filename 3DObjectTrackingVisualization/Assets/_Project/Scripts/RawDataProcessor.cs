@@ -10,4 +10,6 @@ public abstract class RawDataProcessor : MonoBehaviour
     
     public float updateInterval = 1.0f;
     protected float LastUpdateTime;
+    
+    public UnityEvent<string> onRawDataProcessed = new UnityEvent<string>();
 }
