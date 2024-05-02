@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 public abstract class RawDataProcessor : MonoBehaviour
 {
-    [HideInInspector] public UnityEvent<List<BoundingBox3D>> onBoundingBoxProcessed;
+    [HideInInspector] public UnityEvent<List<BoundingBox3D>, float> onBoundingBoxProcessed;
     
     public float updateInterval = 1.0f;
     protected float LastUpdateTime;

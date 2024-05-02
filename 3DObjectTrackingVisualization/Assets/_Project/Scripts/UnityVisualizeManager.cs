@@ -35,9 +35,9 @@ public class UnityVisualizeManager : Singleton<UnityVisualizeManager>
         rawDataProcessor.onBoundingBoxProcessed.AddListener(UpdateBoundingBoxes);
     }
 
-    private void UpdateBoundingBoxes(List<BoundingBox3D> boundingBoxes)
+    private void UpdateBoundingBoxes(List<BoundingBox3D> boundingBoxes, float updateInterval)
     {
         _currentBoundingBoxes = boundingBoxes;
-        boundingBox3DVisualizer.VisualizeBoundingBoxes(_currentBoundingBoxes);
+        boundingBox3DVisualizer.VisualizeBoundingBoxes(_currentBoundingBoxes, updateInterval);
     }
 }

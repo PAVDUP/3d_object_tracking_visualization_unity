@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DataType;
+using DG.Tweening;
 using ScriptableObjectV;
 using UnityEngine;
 using UnityEngine.Events;
@@ -37,12 +38,15 @@ namespace VisualizeModule
         /// 주어진 바운딩 박스 데이터로 바운딩 박스를 시각화
         /// </summary>
         /// <param name="boundingBoxes">시각화할 바운딩 박스 데이터 리스트</param>
-        public void VisualizeBoundingBoxes(List<BoundingBox3D> boundingBoxes)
+        public void VisualizeBoundingBoxes(List<BoundingBox3D> boundingBoxes, float updateInterval)
         {
             List<BoundingBox3DHolder> notRemovedBoundingBoxes = new List<BoundingBox3DHolder>();
             
-            foreach (var bbox in boundingBoxes)
+            
+            for (int i = boundingBoxes.Count -1; i >= 0; i--) 
             {
+                var bbox = boundingBoxes[i];
+                
                 foreach (var currentBoundingBox in _currentBoundingBoxObjects)
                 {
                     if (bbox.identifier == currentBoundingBox.BoundingBox3D.identifier)
@@ -52,9 +56,9 @@ namespace VisualizeModule
                         Quaternion worldRotation = cameraTransform.rotation * bbox.rotation;
 
                         var currentBoundingBoxTransform = currentBoundingBox.transform;
-                        currentBoundingBoxTransform.position = worldPosition;
-                        currentBoundingBoxTransform.localScale = bbox.size; // 바운딩 박스 크기를 여기서 설정하므로, Prefab들의 크기가 모두 동일해야 함. (1, 1, 1) 일때.
-                        currentBoundingBoxTransform.rotation = worldRotation;
+
+                        currentBoundingBoxTransform.DOMove(worldPosition, updateInterval);
+                        currentBoundingBoxTransform.DORotate(worldRotation.eulerAngles, updateInterval);
                         
                         notRemovedBoundingBoxes.Add(currentBoundingBox);
                         _currentBoundingBoxObjects.Remove(currentBoundingBox);

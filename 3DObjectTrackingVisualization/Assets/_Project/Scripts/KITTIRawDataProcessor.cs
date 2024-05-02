@@ -69,8 +69,7 @@ public class KITTIRawDataProcessor : RawDataProcessor
             }
             // Debug.Log(boundingBoxData);
             onRawDataProcessed.Invoke(boundingBoxData);
-            
-            onBoundingBoxProcessed.Invoke(boundingBox3Ds);
+            onBoundingBoxProcessed.Invoke(boundingBox3Ds, updateInterval);
         }
     }
 
@@ -86,7 +85,7 @@ public class KITTIRawDataProcessor : RawDataProcessor
             var boundingBox = new BoundingBox3D
             {
                 rawClassificationData = classification,
-                identifier = Random.Range(0, 10000), // !!!!!!!!!! 임의의 ID 부여 : KITTI 에서는 ID 값이 없어서 이렇게 했으나, 바꿀 필요 있다면 꼭 바꿔야 함!
+                identifier = Random.Range(0, 10), // !!!!!!!!!! 임의의 ID 부여 : KITTI 에서는 ID 값이 없어서 이렇게 했으나, 바꿀 필요 있다면 꼭 바꿔야 함!
                 center = new Vector3(
                     float.Parse(parts[11], CultureInfo.InvariantCulture),
                     float.Parse(parts[12], CultureInfo.InvariantCulture),
