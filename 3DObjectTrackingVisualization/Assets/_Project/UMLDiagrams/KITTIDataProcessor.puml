@@ -40,6 +40,13 @@ class KITTIRawDataProcessor {
   +_dataFilesQueue: Queue<(string, string)>
 }
 
+class OnDeviceRawDataProcessor {
+  +useLocal: bool;
+  -_rawDataFilePath: string
+  -_tcpListener: TcpListener
+  -_tcpClient: TcpClient 
+}
+
 class UnityVisualizeManager {
   +rawDataProcessor: RawDataProcessor
   +boundingBox3DVisualizer: BoundingBox3DVisualizer
@@ -54,6 +61,7 @@ class ClassificationPrefab {
   +classificationPrefabCandidates: GameObject[]
 }
 
+RawDataProcessor <|-- OnDeviceRawDataProcessor
 RawDataProcessor <|-- KITTIRawDataProcessor
 UnityVisualizeManager --> RawDataProcessor: uses
 UnityVisualizeManager --> VisualizeModule.BoundingBox3DVisualizer: uses

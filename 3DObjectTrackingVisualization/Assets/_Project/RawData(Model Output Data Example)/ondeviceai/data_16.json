@@ -1,0 +1,44 @@
+[
+    {
+        "name": "front",
+        "box": [
+            9.0,
+            212.0,
+            122.0,
+            377.0
+        ],
+        "conf": 0.244,
+        "cls": 2.0,
+        "cls_name": "car",
+        "angle": 303.0,
+        "distance": 1439.0
+    },
+    {
+        "name": "front",
+        "box": [
+            777.0,
+            4.0,
+            1072.0,
+            204.0
+        ],
+        "conf": 0.427,
+        "cls": 2.0,
+        "cls_name": "car",
+        "angle": 37.6,
+        "distance": 95.0
+    },
+    {
+        "name": "front",
+        "box": [
+            317.0,
+            39.0,
+            699.0,
+            238.0
+        ],
+        "conf": 0.841,
+        "cls": 2.0,
+        "cls_name": "car",
+        "angle": 340.2,
+        "distance": 1945.0
+    }
+]

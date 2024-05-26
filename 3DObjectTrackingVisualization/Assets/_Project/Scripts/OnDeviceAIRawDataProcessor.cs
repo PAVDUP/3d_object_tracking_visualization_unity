@@ -139,10 +139,14 @@ public class OnDeviceAIRawDataProcessor : RawDataProcessor
         return jsonNode;
     }
 
+    // For Testing
+    
     public List<BoundingBox3D> ProcessJsonData(JSONNode jsonArrayData)
     {
         List<BoundingBox3D> boundingBoxes = new List<BoundingBox3D>();
 
+        int count = 0;
+        
         foreach (var jsonElementData in jsonArrayData)
         {
             var jsonData = jsonElementData.Value;
@@ -163,7 +167,7 @@ public class OnDeviceAIRawDataProcessor : RawDataProcessor
             {
                 rawClassificationData = jsonData["cls_name"],
                 classification = ClassifyObject(jsonData["cls_name"]),
-                identifier = UnityEngine.Random.Range(1, 10000), // 임의의 식별자 - 현재 식별자가 OnDevice 에서 존재치 않음.
+                identifier = count++, // 임의의 식별자 - 현재 식별자가 OnDevice 에서 존재치 않음.
                 center = CalculateCenter(distance, jsonData["angle"]),
                 size = new Vector3(realWidth, realHeight, realWidth),  // 깊이도 같은 값으로 가정
                 rotation = Quaternion.identity  // 회전 없음 - 현재는 회전 체크 불가함.
