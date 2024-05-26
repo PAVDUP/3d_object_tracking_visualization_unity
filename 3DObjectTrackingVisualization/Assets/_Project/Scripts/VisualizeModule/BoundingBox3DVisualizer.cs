@@ -41,25 +41,24 @@ namespace VisualizeModule
         public void VisualizeBoundingBoxes(List<BoundingBox3D> boundingBoxes, float updateInterval)
         {
             List<BoundingBox3DHolder> notRemovedBoundingBoxes = new List<BoundingBox3DHolder>();
-            
-            
-            for (int i = boundingBoxes.Count -1; i >= 0; i--) 
+
+            for (int i = boundingBoxes.Count - 1; i >= 0; i--) 
             {
                 var bbox = boundingBoxes[i];
-                
+
                 foreach (var currentBoundingBox in _currentBoundingBoxObjects)
                 {
                     if (bbox.identifier == currentBoundingBox.BoundingBox3D.identifier)
                     {
-                        // 카메라의 Transform을 적용 -> 월드 좌표계 위치 계산
                         Vector3 worldPosition = cameraTransform.TransformPoint(bbox.center);
                         Quaternion worldRotation = cameraTransform.rotation * bbox.rotation;
 
-                        var currentBoundingBoxTransform = currentBoundingBox.transform;
+                        // 칼만 필터를 통해 상태 업데이트
+                        currentBoundingBox.UpdateState(worldPosition, worldRotation);
 
-                        currentBoundingBoxTransform.DOMove(worldPosition, updateInterval);
-                        currentBoundingBoxTransform.DORotate(worldRotation.eulerAngles, updateInterval);
-                        
+                        currentBoundingBox.transform.DOMove(worldPosition, updateInterval);
+                        currentBoundingBox.transform.DORotate(worldRotation.eulerAngles, updateInterval);
+
                         notRemovedBoundingBoxes.Add(currentBoundingBox);
                         _currentBoundingBoxObjects.Remove(currentBoundingBox);
                         boundingBoxes.Remove(bbox);
@@ -67,50 +66,54 @@ namespace VisualizeModule
                     }
                 }
             }
-            
+
             ClearBoundingBoxes(); 
 
             foreach (var bbox in boundingBoxes)
             {
-                // 카메라의 Transform을 적용 -> 월드 좌표계 위치 계산
                 Vector3 worldPosition = cameraTransform.TransformPoint(bbox.center);
                 Quaternion worldRotation = cameraTransform.rotation * bbox.rotation;
 
-                // 오브젝트 생성
-                GameObject bboxObject = null;
-                foreach (var vClassificationPrefab in classificationPrefabsSetting.classificationPrefabs)
-                {
-                    if (bbox.classification == vClassificationPrefab.classificationType)
-                    {
-                        bboxObject = Instantiate(vClassificationPrefab.classificationPrefabCandidates[Random.Range(0, vClassificationPrefab.classificationPrefabCandidates.Length)]);
-                        break;
-                    }
-                }
-                
-                if (bboxObject == null)
-                {
-                    bboxObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    if (boundingBoxMaterial != null)
-                        bboxObject.GetComponent<Renderer>().material = boundingBoxMaterial;
-                }
-                
+                GameObject bboxObject = InstantiatePrefab(bbox);
                 bboxObject.transform.position = worldPosition;
-                bboxObject.transform.localScale = bbox.size; // 바운딩 박스 크기를 여기서 설정하므로, Prefab들의 크기가 모두 동일해야 함. (1, 1, 1) 일때.
+                bboxObject.transform.localScale = bbox.size;
                 bboxObject.transform.rotation = worldRotation;
-                
+
                 string jsonBboxInfo = JsonUtility.ToJson(bbox);
                 Debug.Log($"[BoundingBox3DVisualizer] New bounding box visualized. {jsonBboxInfo}");
                 onNewBoundingBoxesVisualized?.Invoke("New Object Detected", jsonBboxInfo);
-                
-                // 바운딩 박스 정보 저장소 Component 추가
-                BoundingBox3DHolder tempBoundingBox3DHolder = bboxObject.AddComponent<BoundingBox3DHolder>();
-                tempBoundingBox3DHolder.SetBoundingBox3DInfo(bbox);
-                
-                _currentBoundingBoxObjects.Add(tempBoundingBox3DHolder);
+
+                BoundingBox3DHolder newHolder = bboxObject.AddComponent<BoundingBox3DHolder>();
+                newHolder.SetBoundingBox3DInfo(bbox);
+                newHolder.UpdateState(worldPosition, worldRotation);  // 초기 칼만 필터 상태 설정
+
+                _currentBoundingBoxObjects.Add(newHolder);
             }
-            
-            // 현재 존재하는 boundingBox 추가
+
             _currentBoundingBoxObjects.AddRange(notRemovedBoundingBoxes);
+        }
+        
+        private GameObject InstantiatePrefab(BoundingBox3D bbox)
+        {
+            GameObject bboxObject = null;
+
+            foreach (var prefab in classificationPrefabsSetting.classificationPrefabs)
+            {
+                if (bbox.classification == prefab.classificationType)
+                {
+                    bboxObject = Instantiate(prefab.classificationPrefabCandidates[Random.Range(0, prefab.classificationPrefabCandidates.Length)]);
+                    break;
+                }
+            }
+
+            if (bboxObject == null)
+            {
+                bboxObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                if (boundingBoxMaterial != null)
+                    bboxObject.GetComponent<Renderer>().material = boundingBoxMaterial;
+            }
+
+            return bboxObject;
         }
 
         /// <summary>

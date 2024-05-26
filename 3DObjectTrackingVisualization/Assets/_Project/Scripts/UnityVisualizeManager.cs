@@ -32,6 +32,7 @@ public class UnityVisualizeManager : Singleton<UnityVisualizeManager>
             Debug.LogError("[UnityVisualizeDataStore] RawDataProcessor is not set.");
         }
         
+        rawDataProcessor.gameObject.SetActive(true);
         rawDataProcessor.onBoundingBoxProcessed.AddListener(UpdateBoundingBoxes);
     }
 
