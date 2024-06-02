@@ -77,7 +77,7 @@ namespace Utils
                 -trMatrix.GetColumn(2)   // Up
             );
             
-            return new BoundingBox3D(box.rawClassificationData, box.classification, box.identifier, transformedCenter, box.size, rotation);
+            return new BoundingBox3D(box.cameraType, box.rawClassificationData, box.classification, box.identifier, transformedCenter, box.size, rotation);
         }
         
         public static Quaternion RotationFromYaw(float yawDegrees)

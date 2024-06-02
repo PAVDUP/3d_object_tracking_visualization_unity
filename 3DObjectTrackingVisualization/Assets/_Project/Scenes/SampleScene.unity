@@ -2439,7 +2439,7 @@ MonoBehaviour:
   onBoundingBoxProcessed:
     m_PersistentCalls:
       m_Calls: []
-  updateInterval: 1
+  updateInterval: 0.2
   onRawDataProcessed:
     m_PersistentCalls:
       m_Calls:
@@ -2455,7 +2455,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  useLocal: 1
+  useLocal: 0
 --- !u!4 &159367552
 Transform:
   m_ObjectHideFlags: 0
@@ -5482,6 +5482,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 542654382}
+  - {fileID: 885326903}
   - {fileID: 1198478741}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -13855,6 +13856,37 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1665692151}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &885326902
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 885326903}
+  m_Layer: 0
+  m_Name: "\uBAA8\uC758 \uCE74\uBA54\uB77C"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &885326903
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 885326902}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -4, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 330585546}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &887806845 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4341322971054776, guid: bb22ea4214c77784c96ecc3cb6bc0608,
@@ -22243,7 +22275,8 @@ MonoBehaviour:
   classificationPrefabsSetting: {fileID: 11400000, guid: 4099e164f75021c49b96917ebfc4719f,
     type: 2}
   boundingBoxMaterial: {fileID: 2100000, guid: 3d031d6e275b38d4b983e6d90ac9910a, type: 2}
-  cameraTransform: {fileID: 330585546}
+  frontCameraTransform: {fileID: 330585546}
+  backCameraTransform: {fileID: 1198478741}
   onNewBoundingBoxesVisualized:
     m_PersistentCalls:
       m_Calls:

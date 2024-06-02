@@ -84,6 +84,7 @@ public class KITTIRawDataProcessor : RawDataProcessor
             var classification = parts[0]; // 첫 번째 요소가 Classification 정보
             var boundingBox = new BoundingBox3D
             {
+                cameraType = BoundingBoxCameraType.Front, // !!!!!!!!!! 카메라 타입은 프론트로 고정 : KITTI 데이터셋은 calib 이 적용되어 딱히 바꿀 필요가 없음.
                 rawClassificationData = classification,
                 identifier = Random.Range(0, 10), // !!!!!!!!!! 임의의 ID 부여 : KITTI 에서는 ID 값이 없어서 이렇게 했으나, 바꿀 필요 있다면 꼭 바꿔야 함!
                 center = new Vector3(

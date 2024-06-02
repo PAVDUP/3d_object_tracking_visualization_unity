@@ -66,40 +66,65 @@ public class OnDeviceAIRawDataProcessor : RawDataProcessor
         _tcpListener.Start();
         Debug.Log("Server is listening");
 
-        while (true)
+        try
         {
-            using (_connectedTcpClient = _tcpListener.AcceptTcpClient())
+            while (true)
             {
-                using (NetworkStream stream = _connectedTcpClient.GetStream())
+                using (_connectedTcpClient = _tcpListener.AcceptTcpClient())
                 {
-                    byte[] buffer = new byte[_connectedTcpClient.ReceiveBufferSize];
-
-                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                    if (bytesRead > 0)
+                    Debug.Log("Connected to client");
+                    NetworkStream stream = _connectedTcpClient.GetStream();
+                
+                    while (_connectedTcpClient.Connected) // 연결이 유지되는 동안 계속 데이터를 읽습니다.
                     {
-                        string dataReceived = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                        _dataQueue.Enqueue(dataReceived);
-                        Debug.Log($"Received data: {dataReceived}");
+                        byte[] buffer = new byte[_connectedTcpClient.ReceiveBufferSize];
+                        int bytesRead = stream.Read(buffer, 0, buffer.Length);
+
+                        if (bytesRead > 0)
+                        {
+                            string dataReceived = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                            _dataQueue.Enqueue(dataReceived);
+                            Debug.Log($"Received data: {dataReceived}");
+                        }
+                        else
+                        {
+                            break; // 데이터 읽기 실패, 클라이언트 연결이 끊겼다고 가정
+                        }
                     }
+                    Debug.Log("Client disconnected");
                 }
             }
         }
-        // ReSharper disable once FunctionNeverReturns
+        catch (Exception e)
+        {
+            Debug.LogError($"Server stopped due to an error: {e.Message}");
+            _tcpListener.Stop();
+        }
     }
     
     public void Update()
     {
         if (Time.time - LastUpdateTime > updateInterval && _dataQueue.Count > 0)
         {
-            Debug.Log($"[OnDeviceAIRawDataProcessor] Processing data files..." + _dataQueue.Count);
-            
-            LastUpdateTime = Time.time;
-            var rawDataFilePath = _dataQueue.Dequeue();
+            Debug.Log($"[OnDeviceAIRawDataProcessor] Processing data..." + _dataQueue.Count);
 
-            // raw data 파일 처리
-            var rawDataLines = File.ReadAllLines(rawDataFilePath);
-            List<BoundingBox3D> boundingBox3Ds = ProcessRawData(rawDataLines);
-            
+            LastUpdateTime = Time.time;
+            var rawData = _dataQueue.Dequeue();
+
+            List<BoundingBox3D> boundingBox3Ds;
+            if (useLocal)
+            {
+                // 로컬 파일 경로를 처리
+                var rawDataLines = File.ReadAllLines(rawData);
+                boundingBox3Ds = ProcessRawData(rawDataLines);
+            }
+            else
+            {
+                // TCP 통신을 통해 받은 데이터를 처리
+                var rawDataLines = rawData.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                boundingBox3Ds = ProcessRawData(rawDataLines);
+            }
+
             // 바운딩 박스 처리 완료 이벤트 발생
             string boundingBoxData = "";
             foreach (var box in boundingBox3Ds)
@@ -139,8 +164,53 @@ public class OnDeviceAIRawDataProcessor : RawDataProcessor
         return jsonNode;
     }
 
-    // For Testing
+    public List<BoundingBox3D> ProcessJsonData(JSONNode jsonData)
+    {
+        List<BoundingBox3D> boundingBoxes = new List<BoundingBox3D>();
+
+        foreach (var cameraNode in jsonData.Keys)
+        {
+            JSONNode cameraData = jsonData[cameraNode]; // 각 카메라의 데이터 접근 ("back", "front")
+
+            foreach (var item in cameraData.Keys)
+            {
+                JSONNode itemData = cameraData[item]; // 각 객체 데이터 접근
+            
+                List<float> box = new List<float>();
+                foreach (var value in itemData["box"].AsArray)
+                {
+                    Debug.Log("[OnDeviceAIRawDataProcessor] parse int : " + value.Value.ToString());
+                    box.Add(float.Parse(value.Value.ToString()));
+                }
+
+                float distance = itemData["distance"].AsFloat;
+                if (distance == 0 || distance == -1) continue; // 거리가 0인 데이터는 처리하지 않음
+                
+                distance /= 1000; // mm에서 m로 단위 변환
+
+                float realWidth = Calculate3DScale(box, distance);
+                float realHeight = realWidth; // 높이와 너비를 동일하게 설정, 필요에 따라 수정 가능
+
+                BoundingBox3D boundingBox = new BoundingBox3D
+                {
+                    cameraType = cameraNode == "front" ? BoundingBoxCameraType.Front : BoundingBoxCameraType.Back,
+                    rawClassificationData = itemData["cls_name"],
+                    classification = ClassifyObject(itemData["cls_name"]),
+                    identifier = int.Parse(item), // 고유 식별자
+                    center = CalculateCenter(distance, itemData["angle"].AsFloat),
+                    size = new Vector3(realWidth, realHeight, realWidth), // 깊이를 너비와 동일하게 설정
+                    rotation = Quaternion.identity // 회전 처리 없음
+                };
+
+                boundingBoxes.Add(boundingBox);
+            }
+        }
+
+        return boundingBoxes;
+    }
     
+    /*
+    // For Testing
     public List<BoundingBox3D> ProcessJsonData(JSONNode jsonArrayData)
     {
         List<BoundingBox3D> boundingBoxes = new List<BoundingBox3D>();
@@ -178,7 +248,7 @@ public class OnDeviceAIRawDataProcessor : RawDataProcessor
         }
 
         return boundingBoxes;
-    }
+    }*/
 
     private float Calculate3DScale(List<float> box, float distance)
     {
@@ -202,7 +272,7 @@ public class OnDeviceAIRawDataProcessor : RawDataProcessor
         float radian = angle * Mathf.Deg2Rad;
         float x = Mathf.Sin(radian) * distance;
         float z = Mathf.Cos(radian) * distance;
-        return new Vector3(x, 0, z);  // Y는 0으로 가정, 실제 사용에 따라 조정 필요
+        return new Vector3(x, 0, z) * 5;  // Y는 0으로 가정, 실제 사용에 따라 조정 필요 -  40은 보간
     }
 
     private BoundingBox3DType ClassifyObject(string className)
@@ -210,7 +280,7 @@ public class OnDeviceAIRawDataProcessor : RawDataProcessor
         return className switch
         {
             "car" => BoundingBox3DType.Car,
-            "pedestrian" => BoundingBox3DType.Pedestrian,
+            "person" => BoundingBox3DType.Pedestrian,
             _ => BoundingBox3DType.Misc
         };
     }

@@ -13,7 +13,8 @@ namespace VisualizeModule
         public ClassificationPrefabs classificationPrefabsSetting;
         
         public Material boundingBoxMaterial;
-        public Transform cameraTransform; // 카메라의 Transform 참조!!!!!!!!!!!
+        public Transform frontCameraTransform; // 카메라의 Transform 참조!!!!!!!!!!!
+        public Transform backCameraTransform; 
 
         // 현재 활성화된 바운딩 박스 추적
         private readonly List<BoundingBox3DHolder> _currentBoundingBoxObjects = new List<BoundingBox3DHolder>();
@@ -23,9 +24,9 @@ namespace VisualizeModule
         
         private void Start()
         {
-            if (cameraTransform == null)
+            if (frontCameraTransform == null || backCameraTransform == null)
             {
-                Debug.LogError("[BoundingBox3DVisualizer] cameraTransform is not set. Please set the camera transform.");
+                Debug.LogError("[BoundingBox3DVisualizer] One or both camera transforms are not set. Please set the camera transforms.");
             }
             
             if (classificationPrefabsSetting == null)
@@ -41,17 +42,18 @@ namespace VisualizeModule
         public void VisualizeBoundingBoxes(List<BoundingBox3D> boundingBoxes, float updateInterval)
         {
             List<BoundingBox3DHolder> notRemovedBoundingBoxes = new List<BoundingBox3DHolder>();
-
+            
             for (int i = boundingBoxes.Count - 1; i >= 0; i--) 
             {
                 var bbox = boundingBoxes[i];
-
+                Transform selectedCameraTransform = bbox.cameraType == BoundingBoxCameraType.Front ? frontCameraTransform : backCameraTransform;
+                
                 foreach (var currentBoundingBox in _currentBoundingBoxObjects)
                 {
                     if (bbox.identifier == currentBoundingBox.BoundingBox3D.identifier)
                     {
-                        Vector3 worldPosition = cameraTransform.TransformPoint(bbox.center);
-                        Quaternion worldRotation = cameraTransform.rotation * bbox.rotation;
+                        Vector3 worldPosition = selectedCameraTransform.TransformPoint(bbox.center);
+                        Quaternion worldRotation = selectedCameraTransform.rotation * bbox.rotation;
 
                         // 칼만 필터를 통해 상태 업데이트
                         currentBoundingBox.UpdateState(worldPosition, worldRotation);
@@ -71,8 +73,10 @@ namespace VisualizeModule
 
             foreach (var bbox in boundingBoxes)
             {
-                Vector3 worldPosition = cameraTransform.TransformPoint(bbox.center);
-                Quaternion worldRotation = cameraTransform.rotation * bbox.rotation;
+                Transform selectedCameraTransform = bbox.cameraType == BoundingBoxCameraType.Front ? frontCameraTransform : backCameraTransform;
+                
+                Vector3 worldPosition = selectedCameraTransform.TransformPoint(bbox.center);
+                Quaternion worldRotation = selectedCameraTransform.rotation * bbox.rotation;
 
                 GameObject bboxObject = InstantiatePrefab(bbox);
                 bboxObject.transform.position = worldPosition;
@@ -101,7 +105,7 @@ namespace VisualizeModule
             {
                 if (bbox.classification == prefab.classificationType)
                 {
-                    bboxObject = Instantiate(prefab.classificationPrefabCandidates[Random.Range(0, prefab.classificationPrefabCandidates.Length)]);
+                    bboxObject = Instantiate(prefab.classificationPrefabCandidates[0]);
                     break;
                 }
             }

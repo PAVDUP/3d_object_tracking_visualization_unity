@@ -5,8 +5,16 @@ using UnityEngine.Serialization;
 namespace DataType
 {
     [Serializable]
+    public enum BoundingBoxCameraType
+    {
+        Front,
+        Back
+    }
+    
+    [Serializable]
     public struct BoundingBox3D
     {
+        public BoundingBoxCameraType cameraType;
         public string rawClassificationData;
         public BoundingBox3DType classification;
         public int identifier;
@@ -14,8 +22,9 @@ namespace DataType
         public Vector3 size; 
         public Quaternion rotation; // y axis (up) rotation. 
         
-        public BoundingBox3D(string rawClassificationData, BoundingBox3DType inputClassification, int identifier, Vector3 center, Vector3 size, Quaternion rotation)
+        public BoundingBox3D(BoundingBoxCameraType inputCameraType, string rawClassificationData, BoundingBox3DType inputClassification, int identifier, Vector3 center, Vector3 size, Quaternion rotation)
         {
+            cameraType = inputCameraType;
             this.rawClassificationData = rawClassificationData;
             classification = inputClassification;
             this.identifier = identifier;
